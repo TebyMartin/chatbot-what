@@ -2,10 +2,15 @@ import xlsx from 'xlsx';
 
 // Función para convertir número serial de Excel a fecha legible
 function excelDateToJSDate(serial) {
-  const utc_days = Math.floor(serial - 25569);
-  const utc_value = utc_days * 86400; 
-  const date_info = new Date(utc_value * 1000);
-  return date_info.toISOString().split('T')[0]; // yyyy-mm-dd
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+  const date = new Date(excelEpoch.getTime() + serial * msPerDay);
+
+  const day = date.getUTCDate().toString().padStart(2, '0');
+  const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+  const year = date.getUTCFullYear();
+
+  return `${day}/${month}/${year}`;
 }
 
 // Función para convertir decimal de Excel a hora HH:mm
@@ -16,19 +21,27 @@ function excelTimeToString(excelTime) {
   return `${hours}:${minutes}`;
 }
 
-export default function obtenerTurnosPorTelefono(telefono) {
-  const workbook = xlsx.readFile('./turnos.xlsx');
+
+function leerTurnos() {
+  const workbook = xlsx.readFile('./service/ExcelHandler/turnos.xlsx');
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  const data = xlsx.utils.sheet_to_json(sheet, { raw: true });
 
-  const data = xlsx.utils.sheet_to_json(sheet);
+  return data.map(t => ({
+    telefono: t.telefono?.toString().replace(/\s|\r|\n|"/g, ''),
+    fecha: excelDateToJSDate(t.fecha),
+    hora: excelTimeToString(t["hora "]), 
+    profesional: t.profesional?.trim(),
+    nombre: t.nombre?.trim() || 'Paciente',
+  }));
+}
 
-  return data
-    .map(t => ({
-      telefono: t.telefono?.toString().replace(/\s|\r|\n/g, ''),
-      fecha: excelDateToJSDate(t.fecha),
-      hora: excelTimeToString(t["hora "]), // importante que sea "hora " con espacio
-      profesional: t.profesional?.trim()
-    }))
-    .filter(t => t.telefono === telefono);
+export default function obtenerTurnosPorTelefono(telefono) {
+  const turnos = leerTurnos();
+  return turnos.filter(t => t.telefono === telefono);
+}
+
+export function obtenerTodosLosTurnos() {
+ return leerTurnos();
 }
 //servicio excelhandler
