@@ -34,13 +34,13 @@ export async function recordarTurnos() {
 
   for (let turno of turnos) {
     if (turno.fecha === mañana && turno.telefono) {
-       console.log(`📆 Comparando: turno.fecha = ${turno.fecha} / mañana = ${mañana}`);
+
       const mensaje = `🔔 Hola ${turno.nombre} Tenés agendado un turno para mañana *${turno.fecha}* a las *${turno.hora}* con *${turno.profesional}*. ¿Confirmás asistencia?`;
       const numeroFormateado = `549${turno.telefono.replace(/^549/, '')}@c.us`;
 
       try {
         await client.sendMessage(numeroFormateado, mensaje);
-        console.log(`✅ Recordatorio enviado a ${numeroFormateado}`);
+
       } catch (error) {
         console.error(`❌ Error al enviar a ${numeroFormateado}:`, error.message);
       }

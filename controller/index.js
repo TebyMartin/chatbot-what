@@ -18,11 +18,13 @@ client.on('qr', qr => {
 
 
 client.on('ready', () => {
+
+
   console.log('✅ Bot de WhatsApp listo');
   
 });
 
-cron.schedule('*/1 * * * *', async () => {
+  cron.schedule('*/1 * * * *', async () => {
     try {
       console.log('⏰ Ejecutando cron recordarTurnos...');
       await recordarTurnos();
@@ -30,6 +32,7 @@ cron.schedule('*/1 * * * *', async () => {
       console.error('❌ Error en el cron:', error);
     }
   });
+
 
 //listar turnos
 client.on('message', async msg => {
